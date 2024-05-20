@@ -224,13 +224,13 @@ func (router *Router) Route(method, path string, handler any) *Route {
 			panic(exception.NewNoSuchMethodException(router.root.ControllerType, v))
 		}
 		if numIn := methodType.Type.NumIn(); numIn != 1 {
-			panic(exception.NewTypeException(fmt.Sprintf("invalid number of input, method %s type should be func(*context.Request) web.Responser", v)))
+			panic(exception.NewTypeException(fmt.Sprintf("invalid number of input, method %s type should be func(*request.Request) web.Responser", v)))
 		}
 		if numOut := methodType.Type.NumOut(); numOut != 1 {
-			panic(exception.NewTypeException(fmt.Sprintf("invalid number of output, method %s type should be func(*context.Request) web.Responser", v)))
+			panic(exception.NewTypeException(fmt.Sprintf("invalid number of output, method %s type should be func(*request.Request) web.Responser", v)))
 		}
 		if outputType := methodType.Type.Out(0); !outputType.Implements(reflect.TypeFor[web.Responser]()) {
-			panic(exception.NewTypeException(fmt.Sprintf("invalid type of output, method %s type should be func(*context.Request) web.Responser", v)))
+			panic(exception.NewTypeException(fmt.Sprintf("invalid type of output, method %s type should be func(*request.Request) web.Responser", v)))
 		}
 		route.handler = func(r *request.Request) web.Responser {
 			var controllerValue = reflect.New(router.root.ControllerType.Elem())
