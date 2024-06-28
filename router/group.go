@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/gopi-frame/contract/web"
 	"github.com/gopi-frame/exception"
 	"github.com/gopi-frame/support/lists"
+	"github.com/gopi-frame/web/contract"
 	"github.com/gopi-frame/web/controller"
 	"github.com/gopi-frame/web/middleware"
 	"github.com/gopi-frame/web/request"
@@ -98,7 +98,7 @@ func (group *Group) Route(method, path string, handler any) *Route {
 		middlewares: group.Middlewares,
 	}
 	switch v := handler.(type) {
-	case func(*request.Request) web.Responser:
+	case func(*request.Request) contract.Responser:
 		route.handler = v
 	case string:
 		if group.ControllerType == nil {
@@ -115,25 +115,25 @@ func (group *Group) Route(method, path string, handler any) *Route {
 			panic(exception.NewNoSuchMethodException(group.ControllerType, v))
 		}
 		if numIn := methodType.Type.NumIn(); numIn != 1 {
-			panic(exception.NewTypeException(fmt.Sprintf("invalid number of input, method %s type should be func() web.Responser", v)))
+			panic(exception.NewTypeException(fmt.Sprintf("invalid number of input, method %s type should be func() contract.Responser", v)))
 		}
 		if numOut := methodType.Type.NumOut(); numOut != 1 {
-			panic(exception.NewTypeException(fmt.Sprintf("invalid number of output, method %s type should be func() web.Responser", v)))
+			panic(exception.NewTypeException(fmt.Sprintf("invalid number of output, method %s type should be func() contract.Responser", v)))
 		}
-		if outputType := methodType.Type.Out(0); !outputType.Implements(reflect.TypeFor[web.Responser]()) {
-			panic(exception.NewTypeException(fmt.Sprintf("invalid type of output, method %s type should be func() web.Responser", v)))
+		if outputType := methodType.Type.Out(0); !outputType.Implements(reflect.TypeFor[contract.Responser]()) {
+			panic(exception.NewTypeException(fmt.Sprintf("invalid type of output, method %s type should be func() contract.Responser", v)))
 		}
-		route.handler = func(r *request.Request) web.Responser {
+		route.handler = func(r *request.Request) contract.Responser {
 			var controllerValue = reflect.New(group.ControllerType.Elem())
 			controllerValue.MethodByName("Init").Call([]reflect.Value{
 				reflect.ValueOf(r),
 			})
 			outputs := controllerValue.MethodByName(v).Call([]reflect.Value{})
-			resp := outputs[0].Interface().(web.Responser)
+			resp := outputs[0].Interface().(contract.Responser)
 			return resp
 		}
 	default:
-		panic(exception.NewTypeException("invalid handler type, only string and func(*context.Request) web.Responser are allowed"))
+		panic(exception.NewTypeException("invalid handler type, only string and func(*context.Request) contract.Responser are allowed"))
 	}
 	group.Routes = append(group.Routes, route)
 	return route

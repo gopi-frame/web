@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/gopi-frame/contract/validation"
-	"github.com/gopi-frame/contract/web"
+	validationcontract "github.com/gopi-frame/validation/contract"
+	"github.com/gopi-frame/web/contract"
 	"github.com/gopi-frame/web/request"
 	"github.com/gopi-frame/web/response"
 )
 
 // New new validation middleware
-func New[F validation.Form](validator validation.Engine, bindings ...web.Resolver) *Validate {
+func New[F validationcontract.Form](validator validationcontract.Engine, bindings ...contract.Resolver) *Validate {
 	v := new(Validate)
 	v.validator = validator
 	v.formType = reflect.TypeFor[F]()
@@ -20,7 +20,7 @@ func New[F validation.Form](validator validation.Engine, bindings ...web.Resolve
 }
 
 // For validate middleware for
-func For(form validation.Form, validator validation.Engine, bindings ...web.Resolver) *Validate {
+func For(form validationcontract.Form, validator validationcontract.Engine, bindings ...contract.Resolver) *Validate {
 	v := new(Validate)
 	v.validator = validator
 	v.formType = reflect.TypeOf(form)
@@ -33,16 +33,16 @@ func For(form validation.Form, validator validation.Engine, bindings ...web.Reso
 
 // Validate validation middleware
 type Validate struct {
-	validator validation.Engine
-	bindings  []web.Resolver
+	validator validationcontract.Engine
+	bindings  []contract.Resolver
 	formType  reflect.Type
 }
 
 // Handle handle
-func (v *Validate) Handle(request *request.Request, next func(*request.Request) web.Responser) web.Responser {
-	form := reflect.New(v.formType).Interface().(validation.Form)
+func (v *Validate) Handle(request *request.Request, next func(*request.Request) contract.Responser) contract.Responser {
+	form := reflect.New(v.formType).Interface().(validationcontract.Form)
 	if err := request.Bind(form, v.bindings...); err != nil {
-		return response.NewResponse(http.StatusBadRequest, err.Error())
+		return response.New(http.StatusBadRequest, err.Error())
 	}
 	locale := request.Locale()
 	if locale == "" {

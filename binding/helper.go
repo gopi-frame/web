@@ -154,7 +154,7 @@ func createValue(fieldType reflect.Type, form *multipart.Form, key string, tag r
 			} else if isFileHeaderArray(fieldType) {
 				files := form.File[key]
 				if fieldType.Len() != len(files) {
-					panic(exception.NewException(fmt.Sprintf("filedType.Len() is not equals to len(form.File[%s])", key)))
+					panic(exception.New(fmt.Sprintf("filedType.Len() is not equals to len(form.File[%s])", key)))
 				}
 				array := reflect.New(fieldType).Elem()
 				for index, file := range files {
@@ -180,7 +180,7 @@ func createValue(fieldType reflect.Type, form *multipart.Form, key string, tag r
 			} else if isUploadedFileArray(fieldType) {
 				files := form.File[key]
 				if fieldType.Len() != len(files) {
-					panic(exception.NewException(fmt.Sprintf("filedType.Len() is not equals to len(form.File[%s])", key)))
+					panic(exception.New(fmt.Sprintf("filedType.Len() is not equals to len(form.File[%s])", key)))
 				}
 				array := reflect.New(fieldType).Elem()
 				uploadedFiles := NewUploadedFiles(files).ToArray()
@@ -226,7 +226,7 @@ func createValue(fieldType reflect.Type, form *multipart.Form, key string, tag r
 				v = slice
 			} else if fieldType.Kind() == reflect.Array {
 				if len(values) != fieldType.Len() {
-					panic(exception.NewException(fmt.Sprintf("filedType.Len() is not equals to len(form.Value[%s])", key)))
+					panic(exception.New(fmt.Sprintf("filedType.Len() is not equals to len(form.Value[%s])", key)))
 				}
 				array := reflect.New(fieldType).Elem()
 				for index, item := range values {

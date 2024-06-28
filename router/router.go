@@ -9,12 +9,12 @@ import (
 	"reflect"
 	"strings"
 
-	pipelinecontract "github.com/gopi-frame/contract/pipeline"
-	"github.com/gopi-frame/contract/validation"
-	"github.com/gopi-frame/contract/web"
 	"github.com/gopi-frame/exception"
 	"github.com/gopi-frame/pipeline"
+	pipelinecontract "github.com/gopi-frame/pipeline/contract"
 	"github.com/gopi-frame/support/lists"
+	validationcontract "github.com/gopi-frame/validation/contract"
+	"github.com/gopi-frame/web/contract"
 	"github.com/gopi-frame/web/controller"
 	"github.com/gopi-frame/web/middleware"
 	"github.com/gopi-frame/web/middleware/cors"
@@ -48,7 +48,7 @@ type Router struct {
 	root           *Group
 	HTTPRouter     *httprouter.Router
 	routes         []*Route
-	validateEngine validation.Engine
+	validateEngine validationcontract.Engine
 	cors           *cors.CORS
 }
 
@@ -59,13 +59,13 @@ func (router *Router) SetCORS(options ...cors.Option) *Router {
 }
 
 // SetValidateEngine sets custom validate engine
-func (router *Router) SetValidateEngine(ve validation.Engine) *Router {
+func (router *Router) SetValidateEngine(ve validationcontract.Engine) *Router {
 	router.validateEngine = ve
 	return router
 }
 
 // SetErrorHandler sets custom error handler
-func (router *Router) SetErrorHandler(handler func(*http.Request, error) web.Responser) *Router {
+func (router *Router) SetErrorHandler(handler func(*http.Request, error) contract.Responser) *Router {
 	router.HTTPRouter.PanicHandler = func(w http.ResponseWriter, r *http.Request, i interface{}) {
 		switch v := i.(type) {
 		case error:
@@ -93,9 +93,9 @@ func (router *Router) Run(addr string) error {
 				ctx := r.Context()
 				ctx = libctx.WithValue(ctx, httprouter.ParamsKey, p)
 				req := request.NewRequest(r, p)
-				lines := pipeline.New[*request.Request, web.Responser]()
+				lines := pipeline.New[*request.Request, contract.Responser]()
 				lines = lines.Send(req)
-				stops := make([]pipelinecontract.Stop[*request.Request, web.Responser], 0)
+				stops := make([]pipelinecontract.Pipe[*request.Request, contract.Responser], 0)
 				route.middlewares.Each(func(_ int, middleware middleware.Middleware) bool {
 					stops = append(stops, pipeline.Stop(middleware.Handle))
 					return true
@@ -207,7 +207,7 @@ func (router *Router) Route(method, path string, handler any) *Route {
 		middlewares: router.root.Middlewares,
 	}
 	switch v := handler.(type) {
-	case func(*request.Request) web.Responser:
+	case func(*request.Request) contract.Responser:
 		route.handler = v
 	case string:
 		if router.root.ControllerType == nil {
@@ -224,25 +224,25 @@ func (router *Router) Route(method, path string, handler any) *Route {
 			panic(exception.NewNoSuchMethodException(router.root.ControllerType, v))
 		}
 		if numIn := methodType.Type.NumIn(); numIn != 1 {
-			panic(exception.NewTypeException(fmt.Sprintf("invalid number of input, method %s type should be func(*request.Request) web.Responser", v)))
+			panic(exception.NewTypeException(fmt.Sprintf("invalid number of input, method %s type should be func(*request.Request) contract.Responser", v)))
 		}
 		if numOut := methodType.Type.NumOut(); numOut != 1 {
-			panic(exception.NewTypeException(fmt.Sprintf("invalid number of output, method %s type should be func(*request.Request) web.Responser", v)))
+			panic(exception.NewTypeException(fmt.Sprintf("invalid number of output, method %s type should be func(*request.Request) contract.Responser", v)))
 		}
-		if outputType := methodType.Type.Out(0); !outputType.Implements(reflect.TypeFor[web.Responser]()) {
-			panic(exception.NewTypeException(fmt.Sprintf("invalid type of output, method %s type should be func(*request.Request) web.Responser", v)))
+		if outputType := methodType.Type.Out(0); !outputType.Implements(reflect.TypeFor[contract.Responser]()) {
+			panic(exception.NewTypeException(fmt.Sprintf("invalid type of output, method %s type should be func(*request.Request) contract.Responser", v)))
 		}
-		route.handler = func(r *request.Request) web.Responser {
+		route.handler = func(r *request.Request) contract.Responser {
 			var controllerValue = reflect.New(router.root.ControllerType.Elem())
 			controllerValue.MethodByName("Init").Call([]reflect.Value{
 				reflect.ValueOf(r),
 			})
 			outputs := controllerValue.MethodByName(v).Call([]reflect.Value{})
-			resp := outputs[0].Interface().(web.Responser)
+			resp := outputs[0].Interface().(contract.Responser)
 			return resp
 		}
 	default:
-		panic(exception.NewTypeException("invalid handler type, only string and func(*context.Request) web.Responser are allowed"))
+		panic(exception.NewTypeException("invalid handler type, only string and func(*context.Request) contract.Responser are allowed"))
 	}
 	router.root.Routes = append(router.root.Routes, route)
 	return route

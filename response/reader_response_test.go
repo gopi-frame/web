@@ -11,7 +11,7 @@ import (
 
 func TestReaderResponse(t *testing.T) {
 	reader := strings.NewReader("helloworld")
-	response := NewResponse(200).Reader(reader)
+	response := New(200).Reader(reader)
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest("GET", "/", nil)
 	response.Send(recorder, request)

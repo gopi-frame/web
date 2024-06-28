@@ -14,7 +14,7 @@ func TestFileResponse(t *testing.T) {
 	tempFile, err := os.CreateTemp(tempDir, "test_response")
 	assert.Nil(t, err)
 	tempFile.Write([]byte("helloworld"))
-	response := NewResponse(200).File(tempFile.Name())
+	response := New(200).File(tempFile.Name())
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest("GET", "/", nil)
 	response.Send(recorder, request)

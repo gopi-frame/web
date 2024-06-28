@@ -8,7 +8,7 @@ import (
 )
 
 func TestRedirectResponse(t *testing.T) {
-	response := NewResponse(302).Redirect("https://target.com")
+	response := New(302).Redirect("https://target.com")
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest("GET", "/", nil)
 	response.Send(recorder, request)

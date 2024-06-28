@@ -1,9 +1,9 @@
 package response
 
 import (
+	"encoding/json"
 	"net/http"
 
-	"github.com/gopi-frame/codec"
 	"github.com/gopi-frame/web/mimetype"
 )
 
@@ -20,7 +20,7 @@ func (jsonResponse *JSONResponse) SetContent(data any) {
 
 // Send sends the response
 func (jsonResponse *JSONResponse) Send(w http.ResponseWriter, r *http.Request) {
-	jsonBytes, err := codec.Marshal(codec.JSON, jsonResponse.data)
+	jsonBytes, err := json.Marshal(jsonResponse.data)
 	if err != nil {
 		panic(err)
 	}

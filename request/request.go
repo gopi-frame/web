@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gopi-frame/contract/validation"
-	"github.com/gopi-frame/contract/web"
 	"github.com/gopi-frame/support/lists"
 	"github.com/gopi-frame/support/maps"
 	"github.com/gopi-frame/types"
+	validationcontract "github.com/gopi-frame/validation/contract"
 	"github.com/gopi-frame/web/binding"
+	"github.com/gopi-frame/web/contract"
 	"github.com/gopi-frame/web/mimetype"
 	"github.com/julienschmidt/httprouter"
 )
@@ -38,12 +38,12 @@ func NewRequest(r *http.Request, p httprouter.Params) *Request {
 	return req
 }
 
-// Request http request with custom attributes and methods
+// Request http request
 type Request struct {
 	Request *http.Request
 	Params  httprouter.Params
 	Values  *maps.Map[string, any]
-	form    validation.Form
+	form    validationcontract.Form
 	locale  string
 }
 
@@ -67,8 +67,8 @@ func (r *Request) Set(key string, value any) {
 //
 // if the specific key is not exist, it returns nil and false
 func (r *Request) Get(key string) (any, bool) {
-	r.Values.Lock()
-	defer r.Values.Unlock()
+	r.Values.RLock()
+	defer r.Values.RUnlock()
 	if ok := r.Values.ContainsKey(key); ok {
 		return r.Values.Get(key)
 	}
@@ -80,7 +80,7 @@ func (r *Request) Get(key string) (any, bool) {
 // if the specific key is not exist, it will panic
 func (r *Request) MustGet(key string) any {
 	if value, exists := r.Get(key); !exists {
-		panic(fmt.Errorf("Key \"%s\" does not exists in context Values", key))
+		panic(fmt.Errorf("key \"%s\" does not exists in context Values", key))
 	} else {
 		return value
 	}
@@ -312,11 +312,11 @@ func (r *Request) ClientIP() string {
 	return ""
 }
 
-// Bind parses request into an instance of [validation.Form]
+// Bind parses request into an instance of [validationcontract.Form]
 //
 // if bindings is not provided, it uses [binding.Form] and
 // binding implements according to Content-Type header
-func (r *Request) Bind(form validation.Form, bindings ...web.Resolver) error {
+func (r *Request) Bind(form validationcontract.Form, bindings ...contract.Resolver) error {
 	if len(bindings) == 0 {
 		bindings = append(bindings, binding.Form)
 		if h := r.Header("Content-Type"); h != "" {
@@ -325,10 +325,6 @@ func (r *Request) Bind(form validation.Form, bindings ...web.Resolver) error {
 				bindings = append(bindings, binding.JSON)
 			} else if contentType == mimetype.XML {
 				bindings = append(bindings, binding.XML)
-			} else if contentType == mimetype.YAML {
-				bindings = append(bindings, binding.YAML)
-			} else if contentType == mimetype.TOML {
-				bindings = append(bindings, binding.TOML)
 			} else if contentType == mimetype.FormData || contentType == mimetype.FormURLEncode {
 				bindings = append(bindings, binding.Form)
 			}
@@ -343,8 +339,8 @@ func (r *Request) Bind(form validation.Form, bindings ...web.Resolver) error {
 	return nil
 }
 
-// Form returns the validated instance of [validation.Form]
-func (r *Request) Form() validation.Form {
+// Form returns the validated instance of [validationcontract.Form]
+func (r *Request) Form() validationcontract.Form {
 	return r.form
 }
 

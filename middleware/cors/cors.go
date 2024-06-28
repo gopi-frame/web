@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gopi-frame/contract/web"
-	"github.com/gopi-frame/web/middleware"
+	"github.com/gopi-frame/web/contract"
 	"github.com/gopi-frame/web/request"
 )
-
-var _ middleware.Middleware = (*CORS)(nil)
 
 // New new cors middleware
 func New(options ...Option) *CORS {
@@ -30,7 +27,7 @@ type CORS struct {
 }
 
 // Handle handle
-func (cors *CORS) Handle(request *request.Request, next func(*request.Request) web.Responser) web.Responser {
+func (cors *CORS) Handle(request *request.Request, next func(*request.Request) contract.Responser) contract.Responser {
 	resp := next(request)
 	resp.Headers().Set("Access-Control-Allow-Credentials", fmt.Sprintf("%v", cors.AllowCredentials))
 	if len(cors.AllowHeaders) > 0 {

@@ -10,7 +10,7 @@ import (
 )
 
 func TestResponse(t *testing.T) {
-	response := NewResponse(200, "hello")
+	response := New(200, "hello")
 	assert.Equal(t, 200, response.StatusCode())
 	assert.EqualValues(t, "hello", response.Content())
 	response.SetStatusCode(201)

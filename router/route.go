@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"runtime"
 
-	"github.com/gopi-frame/contract/validation"
-	"github.com/gopi-frame/contract/web"
 	"github.com/gopi-frame/support/lists"
+	validationcontract "github.com/gopi-frame/validation/contract"
+	"github.com/gopi-frame/web/contract"
 	"github.com/gopi-frame/web/middleware"
 	"github.com/gopi-frame/web/middleware/validate"
 	"github.com/gopi-frame/web/request"
@@ -20,7 +20,7 @@ type Route struct {
 	path        string
 	middlewares *lists.List[middleware.Middleware]
 	validation  middleware.Middleware
-	handler     func(*request.Request) web.Responser
+	handler     func(*request.Request) contract.Responser
 }
 
 // AS sets the name
@@ -66,7 +66,7 @@ func (route *Route) Handler() string {
 }
 
 // Validate binds validation form to the route
-func (route *Route) Validate(form validation.Form, bindings ...web.Resolver) *Route {
+func (route *Route) Validate(form validationcontract.Form, bindings ...contract.Resolver) *Route {
 	if route.router.validateEngine == nil {
 		panic(ErrValidateEngineEmpty)
 	}

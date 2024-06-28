@@ -11,7 +11,7 @@ import (
 
 func TestStreamedResponse(t *testing.T) {
 	var i int
-	response := NewResponse(200).Stream(func(w io.Writer) bool {
+	response := New(200).Stream(func(w io.Writer) bool {
 		w.Write([]byte(fmt.Sprint(i)))
 		i++
 		return i < 10

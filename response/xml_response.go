@@ -1,9 +1,9 @@
 package response
 
 import (
+	"encoding/xml"
 	"net/http"
 
-	"github.com/gopi-frame/codec"
 	"github.com/gopi-frame/web/mimetype"
 )
 
@@ -20,7 +20,7 @@ func (xmlResponse *XMLResponse) SetContent(data any) {
 
 // Send sends the response
 func (xmlResponse *XMLResponse) Send(w http.ResponseWriter, r *http.Request) {
-	xmlBytes, err := codec.Marshal(codec.XML, xmlResponse.data)
+	xmlBytes, err := xml.Marshal(xmlResponse.data)
 	if err != nil {
 		panic(err)
 	}

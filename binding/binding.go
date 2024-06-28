@@ -7,5 +7,5 @@ type Binding func(r *http.Request, dest any) error
 
 // Resolve resolve
 func (b Binding) Resolve(r *http.Request, dest any) error {
-	return b.Resolve(r, dest)
+	return b(r, dest)
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func TestJSONResponse(t *testing.T) {
-	response := NewResponse(200).JSON(map[string]any{
+	response := New(200).JSON(map[string]any{
 		"key1": "value1",
 		"key2": "value2",
 	})

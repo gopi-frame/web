@@ -2,7 +2,7 @@ package reqid
 
 import (
 	"github.com/google/uuid"
-	"github.com/gopi-frame/contract/web"
+	"github.com/gopi-frame/web/contract"
 	"github.com/gopi-frame/web/request"
 )
 
@@ -26,7 +26,7 @@ type RequestID struct {
 }
 
 // Handle handle
-func (r *RequestID) Handle(request *request.Request, next func(*request.Request) web.Responser) web.Responser {
+func (r *RequestID) Handle(request *request.Request, next func(*request.Request) contract.Responser) contract.Responser {
 	var id = r.Generator()
 	resp := next(request)
 	if resp != nil && !resp.HasHeader(r.Header) {

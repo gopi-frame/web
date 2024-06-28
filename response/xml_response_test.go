@@ -17,7 +17,7 @@ func TestXMLResponse(t *testing.T) {
 		Key1: "value1",
 		Key2: "value2",
 	}
-	response := NewResponse(200).XML(data1)
+	response := New(200).XML(data1)
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest("GET", "/", nil)
 	response.Send(recorder, request)

@@ -5,12 +5,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gopi-frame/contract/support"
-	"github.com/gopi-frame/contract/web"
-	"google.golang.org/protobuf/proto"
+	"github.com/gopi-frame/support/contract"
 )
-
-var _ web.Responser = new(Response)
 
 // Response is the basic response implement
 type Response struct {
@@ -20,8 +16,8 @@ type Response struct {
 	content    any
 }
 
-// NewResponse creates a new [Response] instance
-func NewResponse(statusCode int, content ...any) *Response {
+// New creates a new [Response] instance
+func New(statusCode int, content ...any) *Response {
 	response := &Response{
 		headers:    make(http.Header),
 		cookies:    make([]*http.Cookie, 0),
@@ -117,7 +113,7 @@ func (response *Response) Send(w http.ResponseWriter, r *http.Request) {
 			if _, err := w.Write(v); err != nil {
 				panic(err)
 			}
-		case support.Stringable:
+		case contract.Stringable:
 			if _, err := w.Write([]byte(v.String())); err != nil {
 				panic(err)
 			}
@@ -157,45 +153,6 @@ func (response *Response) XML(data ...any) *XMLResponse {
 		xml.SetContent(response.content)
 	}
 	return xml
-}
-
-// YAML returns a YAML response implement
-func (response *Response) YAML(data ...any) *YAMLResponse {
-	yaml := &YAMLResponse{
-		Response: response,
-	}
-	if len(data) > 0 {
-		yaml.SetContent(data[0])
-	} else {
-		yaml.SetContent(response.content)
-	}
-	return yaml
-}
-
-// TOML returns a TOML response implement
-func (response *Response) TOML(data ...any) *TOMLResponse {
-	toml := &TOMLResponse{
-		Response: response,
-	}
-	if len(data) > 0 {
-		toml.SetContent(data[0])
-	} else {
-		toml.SetContent(response.content)
-	}
-	return toml
-}
-
-// Protobuf returns a ProtoBuf response implement
-func (response *Response) Protobuf(data ...proto.Message) *ProtobufResponse {
-	protobuf := &ProtobufResponse{
-		Response: response,
-	}
-	if len(data) > 0 {
-		protobuf.SetContent(data[0])
-	} else {
-		protobuf.SetContent(response.content)
-	}
-	return protobuf
 }
 
 // Reader returns a Reader response implement
